@@ -20,7 +20,14 @@ namespace DisplaySizeTestsWithNunit
 		public void Setup()
 		{
 			log("starting driver");
-			driver = new ChromeDriver();
+
+			var options = new ChromeOptions();
+			if (Environment.GetEnvironmentVariable("IS_TESTERY") == "true")
+			{
+				options.AddArguments(Environment.GetEnvironmentVariable("TESTERY_CHROME_ARGS").Split(';'));
+			}
+			driver = new ChromeDriver(options);
+
 			log(driver.GetType().Name);
 
 			log("opening url");
