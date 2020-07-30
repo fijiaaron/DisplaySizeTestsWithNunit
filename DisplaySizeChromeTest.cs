@@ -11,30 +11,16 @@ namespace DisplaySizeTestsWithNunit
 	{
 		IWebDriver driver;
 
-		private void log(String message)
-		{
-			TestContext.Out.WriteLine(message);
-		}
-
 		[SetUp]
 		public void Setup()
 		{
-			log("starting driver");
+			Log("starting driver");
+			driver = GetDriverInstance();
 
-			var options = new ChromeOptions();
-			if (Environment.GetEnvironmentVariable("IS_TESTERY") == "true")
-			{
-				options.AddArguments(Environment.GetEnvironmentVariable("TESTERY_CHROME_ARGS").Split(';'));
-			}
-			driver = new ChromeDriver(options);
-
-			log(driver.GetType().Name);
-
-			log("opening url");
+			Log("opening url");
 			driver.Url = "https://whatismyviewport.com/";
-			log(driver.Url);
+			Log(driver.Url);
 		}
-
 
 		[Test]
 		public void CheckUnmodifiedDimensions()
@@ -61,51 +47,56 @@ namespace DisplaySizeTestsWithNunit
 		}
 
 
-		public (int x, int y) getViewportDimensions()
+		private (int x, int y) getViewportDimensions(IWebDriver driver)
 		{
 			var js = (IJavaScriptExecutor)driver;
 
 			var x = Convert.ToInt32(js.ExecuteScript("return window.innerWidth"));
 			var y = Convert.ToInt32(js.ExecuteScript("return window.innerHeight"));
 
-			log("viewportWidth: " + x);
-			log("viewportHeight: " + y);
+			Log("viewportWidth: " + x);
+			Log("viewportHeight: " + y);
 
 			return (x, y);
 		}
 
-		public (int w, int h) getScreenDimensions(IWebDriver driver)
+		private (int x, int y) getScreenDimensions(IWebDriver driver)
 		{
 			var js = (IJavaScriptExecutor)driver;
 
-			var w = Convert.ToInt32(js.ExecuteScript("return window.screen.width"));
-			var h = Convert.ToInt32(js.ExecuteScript("return window.screen.height"));
+			var x = Convert.ToInt32(js.ExecuteScript("return window.screen.width"));
+			var y = Convert.ToInt32(js.ExecuteScript("return window.screen.height"));
 
-			log("screen width: " + w);
-			log("screen height: " + h);
+			Log("screen width: " + x);
+			Log("screen height: " + y);
 
-			return (w, h);
+			return (x, y);
 		}
-
-		public (int w, int h) getViewportDimensions(IWebDriver driver)
-		{
-			var js = (IJavaScriptExecutor)driver;
-
-			var w = Convert.ToInt32(js.ExecuteScript("return window.innerWidth"));
-			var h = Convert.ToInt32(js.ExecuteScript("return window.innerHeight"));
-
-			log("viewport width: " + w);
-			log("viewport height: " + h);
-
-			return (w, h);
-		}
-
 
 		[TearDown]
 		public void TearDown()
 		{
 			Pause(2);
 			driver.Quit();
+		}
+
+		private IWebDriver GetDriverInstance()
+		{
+			var options = new ChromeOptions();
+			if (Environment.GetEnvironmentVariable("IS_TESTERY") == "true")
+			{
+				options.AddArguments(Environment.GetEnvironmentVariable("TESTERY_CHROME_ARGS").Split(';'));
+			}
+
+			IWebDriver driver = new ChromeDriver(options);
+			Log(driver.GetType().Name);
+
+			return driver;
+		}
+
+		private void Log(String message)
+		{
+			TestContext.Out.WriteLine(message);
 		}
 
 		private void Pause(float seconds)
